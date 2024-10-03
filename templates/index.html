@@ -19,6 +19,7 @@
             height: auto;
             display: block;
             object-fit: cover;
+            cursor: pointer;
         }
         .container {
             max-height: 90vh;
@@ -34,6 +35,11 @@
             margin: 5px;
             cursor: pointer;
         }
+        #currentPage {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 20px;
+        }
     </style>
 </head>
 <body>
@@ -46,12 +52,14 @@
 
 <div class="pagination">
     <button id="prevBtn" onclick="prevPage()">Previous Page</button>
+    <span id="currentPage">Page 1 of 1</span>
     <button id="nextBtn" onclick="nextPage()">Next Page</button>
 </div>
 
 <script>
     let currentPage = 1;
     const limit = 20;  // 每页图片数量
+    let totalPages = 1;  // 初始化总页数为1
 
     // 加载图片并更新画廊
     function loadImages(page) {
@@ -65,12 +73,19 @@
                     const imgElement = document.createElement('img');
                     imgElement.src = `/images/${image}`;
                     imgElement.alt = image;
+                    imgElement.onclick = () => openImageDir(image);  // 添加点击事件
                     gallery.appendChild(imgElement);
                 });
 
+                // 更新总页数
+                totalPages = Math.ceil(data.total / limit);
+                
+                // 更新当前页码和总页码显示
+                document.getElementById('currentPage').textContent = `Page ${page} of ${totalPages}`;
+
                 // 根据页码禁用或启用分页按钮
                 document.getElementById('prevBtn').disabled = page <= 1;
-                document.getElementById('nextBtn').disabled = (page * limit) >= data.total;
+                document.getElementById('nextBtn').disabled = page >= totalPages;
             });
     }
 
@@ -84,8 +99,28 @@
 
     // 切换到下一页
     function nextPage() {
-        currentPage++;
-        loadImages(currentPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadImages(currentPage);
+        }
+    }
+
+    // 使用 AJAX 调用后端接口，打开图片所在目录
+    function openImageDir(imagePath) {
+        fetch('/open-image-dir', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ path: imagePath })
+        }).then(response => response.json())
+          .then(data => {
+              if (data.status === "success") {
+                  console.log(`Opened directory for: ${imagePath}`);
+              } else {
+                  console.error(`Failed to open directory: ${data.message}`);
+              }
+          });
     }
 
     // 页面加载时默认加载第一页图片
