@@ -33,6 +33,16 @@ def get_images():
                     'filename': filename
                 })
 
+    # 确保顺序稳定
+    # images.sort(key=lambda x: x['path']) # 按目录
+    # images.sort(key=lambda x: x['filename']) # 按文件名
+    # images.sort(key=lambda x: os.path.getsize(os.path.join(IMAGE_DIRECTORY, x['path']))) # 按文件大小
+    # images.sort(key=lambda x: os.path.getmtime(os.path.join(IMAGE_DIRECTORY, x['path']))) # 按修改时间
+    images.sort( # 按文件修改时间降序排序（新到旧）
+        key=lambda x: os.path.getmtime(os.path.join(IMAGE_DIRECTORY, x['path'])),
+        reverse=True
+    )
+
     # 获取请求参数 page 和 limit，控制分页
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', IMAGES_PER_PAGE))
