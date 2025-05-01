@@ -22,9 +22,16 @@ def get_images():
     images = []
     for root, dirs, files in os.walk(IMAGE_DIRECTORY):
         for file in files:
-            if file.endswith(('.png', '.jpg', '.jpeg', '.gif')):
+            if file.endswith(('.png', '.jpg', '.jpeg', '.gif')):#其实可以只是.gif
                 relative_path = os.path.relpath(os.path.join(root, file), IMAGE_DIRECTORY)
-                images.append(relative_path)
+                filename = os.path.basename(relative_path)
+                # 如果文件是 .gif 结尾，去掉 .gif 扩展名
+                if filename.endswith('.gif'):
+                    filename = os.path.splitext(filename)[0]
+                images.append({
+                    'path': relative_path,
+                    'filename': filename
+                })
 
     # 获取请求参数 page 和 limit，控制分页
     page = int(request.args.get('page', 1))
@@ -58,7 +65,12 @@ def open_image_dir():
         full_image_path = os.path.abspath(full_image_path)
         
         if sys.platform == "win32":  # Windows 系统
+            # 我们不打开gif所在的folder_path, 而是打开同名.path文件指向的目录
             folder_path = os.path.dirname(full_image_path)
+            path_file = full_image_path + '.path'
+            with open(path_file, 'r') as f:
+                full_image_path = f.read().strip()
+
             # 使用 explorer.exe 打开目录并选中文件
             subprocess.run(f'explorer /select,"{full_image_path}"')
             return jsonify({"status": "success"})

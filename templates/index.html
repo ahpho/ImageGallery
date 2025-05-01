@@ -40,6 +40,21 @@
             font-weight: bold;
             margin: 0 20px;
         }
+        .image-container {
+            text-align: center;
+        }
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        .image-filename {
+            margin-top: 5px;
+            font-size: 12px;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
@@ -70,11 +85,21 @@
                 gallery.innerHTML = '';  // 清空当前图片
 
                 data.images.forEach(image => {
+                    const container = document.createElement('div');
+                    container.className = 'image-container';
+
                     const imgElement = document.createElement('img');
-                    imgElement.src = `/images/${image}`;
-                    imgElement.alt = image;
-                    imgElement.onclick = () => openImageDir(image);  // 添加点击事件
-                    gallery.appendChild(imgElement);
+                    imgElement.src = `/images/${image.path}`;
+                    imgElement.alt = image.filename;
+                    imgElement.onclick = () => openImageDir(image.path);
+
+                    const filenameElement = document.createElement('div');
+                    filenameElement.className = 'image-filename';
+                    filenameElement.textContent = image.filename;
+
+                    container.appendChild(imgElement);
+                    container.appendChild(filenameElement);
+                    gallery.appendChild(container);
                 });
 
                 // 更新总页数
